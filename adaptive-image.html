@@ -18,12 +18,11 @@
         img {
             width: 100vw;
             height: 100vh;
-            object-fit: cover;
         }
     </style>
 </head>
 <body>
-    <img id="randomImage" src="" alt="Random Image">
+    <img id="randomImage" src="" alt="Loading image...">
     
     <script>
         function loadRandomImage() {
@@ -32,22 +31,25 @@
             const screenHeight = window.innerHeight;
             const aspectRatio = screenWidth / screenHeight;
 
-            let minWidth = screenWidth;
-            let minHeight = screenHeight;
+            let minWidth, minHeight, orientation, objectFit;
 
-            // Adjust width and height to nearest common sizes for better results
-            if (aspectRatio > 2) {
+            // Determine if it's a mobile or laptop screen
+            if (aspectRatio > 1.5) { // Laptop/Desktop (Wider)
                 minWidth = Math.max(screenWidth, 1920);
-                minHeight = Math.max(screenHeight, 960);
-            } else if (aspectRatio > 1.5) {
-                minWidth = Math.max(screenWidth, 1600);
-                minHeight = Math.max(screenHeight, 900);
-            } else {
-                minWidth = Math.max(screenWidth, 1080);
-                minHeight = Math.max(screenHeight, 1920);
+                minHeight = Math.max(screenHeight, 1080);
+                orientation = "horizontal";
+                objectFit = "cover"; // Fill screen
+            } else { // Mobile (Taller)
+                minWidth = Math.max(screenWidth, 900);
+                minHeight = Math.max(screenHeight, 1600);
+                orientation = "vertical";
+                objectFit = "contain"; // Show full image without cutting
             }
 
-            const apiUrl = `https://pixabay.com/api/?key=${apiKey}&image_type=photo&orientation=horizontal&min_width=${minWidth}&min_height=${minHeight}&per_page=50`;
+            // Apply object-fit dynamically
+            document.getElementById("randomImage").style.objectFit = objectFit;
+
+            const apiUrl = `https://pixabay.com/api/?key=${apiKey}&image_type=photo&orientation=${orientation}&min_width=${minWidth}&min_height=${minHeight}&per_page=50`;
 
             fetch(apiUrl)
             .then(response => response.json())

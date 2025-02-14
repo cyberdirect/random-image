@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adaptive Random Image</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: black;
+        }
+        img {
+            width: 100vw;
+            height: 100vh;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <img id="randomImage" src="" alt="Random Image">
+    
+    <script>
+        function loadRandomImage() {
+            const apiKey = "48850694-51bb94a2c536378db907d021f";
+            const screenWidth = window.innerWidth;
+            const screenHeight = window.innerHeight;
+            const aspectRatio = screenWidth / screenHeight;
+
+            let minWidth = screenWidth;
+            let minHeight = screenHeight;
+
+            // Adjust width and height to nearest common sizes for better results
+            if (aspectRatio > 2) {
+                minWidth = Math.max(screenWidth, 1920);
+                minHeight = Math.max(screenHeight, 960);
+            } else if (aspectRatio > 1.5) {
+                minWidth = Math.max(screenWidth, 1600);
+                minHeight = Math.max(screenHeight, 900);
+            } else {
+                minWidth = Math.max(screenWidth, 1080);
+                minHeight = Math.max(screenHeight, 1920);
+            }
+
+            const apiUrl = `https://pixabay.com/api/?key=${apiKey}&image_type=photo&orientation=horizontal&min_width=${minWidth}&min_height=${minHeight}&per_page=50`;
+
+            fetch(apiUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data.hits.length > 0) {
+                    let randomImage = data.hits[Math.floor(Math.random() * data.hits.length)].largeImageURL;
+                    document.getElementById("randomImage").src = randomImage;
+                } else {
+                    document.getElementById("randomImage").alt = "No images found";
+                }
+            })
+            .catch(error => console.error("Error fetching image:", error));
+        }
+
+        // Load image on page load
+        loadRandomImage();
+
+        // Reload image when window resizes (optional)
+        window.addEventListener("resize", () => {
+            loadRandomImage();
+        });
+    </script>
+</body>
+</html>

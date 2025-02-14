@@ -38,27 +38,59 @@
                 minWidth = Math.max(screenWidth, 1920);
                 minHeight = Math.max(screenHeight, 1080);
                 orientation = "horizontal";
-                objectFit = "cover"; // Fill screen
+                objectFit = "cover";
             } else { // Mobile (Taller, closer to 9:16)
-                minWidth = 1080;  // Ensure minimum 9:16 aspect ratio
-                minHeight = 1920;  // Enforce tall images
+                minWidth = 1080;
+                minHeight = 1920;
                 orientation = "vertical";
-                objectFit = "cover"; // Fill screen properly
+                objectFit = "cover";
             }
 
             // Apply object-fit dynamically
             document.getElementById("randomImage").style.objectFit = objectFit;
 
-            const apiUrl = `https://pixabay.com/api/?key=${apiKey}&image_type=photo&orientation=${orientation}&min_width=${minWidth}&min_height=${minHeight}&per_page=50`;
+            // Allowed categories (11 Total)
+            const allowedCategories = [
+                "backgrounds", "nature", "places", "animals", 
+                "industry", "computer", "food", "transportation", 
+                "travel", "buildings", "music"
+            ];
+
+            // Forbidden tags to block unwanted content
+            const forbiddenTags = [
+                "woman", "women", "model", "fashion", "pose", "portrait", "style", "makeup",
+                "girl", "people", "boy", "man", "face", "selfie", "smile", "posing", "lifestyle",
+                "expression", "beauty", "actor", "actress", "wedding", "couple", "friends", "student"
+            ];
+
+            // Pick a random category from the approved list
+            const randomCategory = allowedCategories[Math.floor(Math.random() * allowedCategories.length)];
+
+            // Pixabay API request with SafeSearch enabled
+            const apiUrl = `https://pixabay.com/api/?key=${apiKey}&image_type=photo&orientation=${orientation}&min_width=${minWidth}&min_height=${minHeight}&category=${randomCategory}&order=random&safesearch=true&per_page=50`;
 
             fetch(apiUrl)
             .then(response => response.json())
             .then(data => {
                 if (data.hits.length > 0) {
-                    let randomImage = data.hits[Math.floor(Math.random() * data.hits.length)].largeImageURL;
-                    document.getElementById("randomImage").src = randomImage;
+                    // Stronger filtering to remove images with forbidden tags
+                    const filteredImages = data.hits.filter(image => {
+                        const tags = image.tags.toLowerCase();
+                        return (
+                            allowedCategories.some(category => tags.includes(category)) && 
+                            !forbiddenTags.some(forbidden => tags.includes(forbidden))
+                        );
+                    });
+
+                    if (filteredImages.length > 0) {
+                        let randomImage = filteredImages[Math.floor(Math.random() * filteredImages.length)].largeImageURL;
+                        document.getElementById("randomImage").src = randomImage;
+                    } else {
+                        console.warn("Filtered out unwanted images (models, fashion, people, etc.), trying again...");
+                        loadRandomImage(); // Fetches new images if all results are blocked
+                    }
                 } else {
-                    document.getElementById("randomImage").alt = "No images found";
+                    document.getElementById("randomImage").alt = "No images found in the approved categories.";
                 }
             })
             .catch(error => console.error("Error fetching image:", error));

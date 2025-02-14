@@ -33,17 +33,17 @@
 
             let minWidth, minHeight, orientation, objectFit;
 
-            // Determine if it's a mobile or laptop screen
+            // Detect if the device is a laptop (wide) or mobile (tall)
             if (aspectRatio > 1.5) { // Laptop/Desktop (Wider)
                 minWidth = Math.max(screenWidth, 1920);
                 minHeight = Math.max(screenHeight, 1080);
                 orientation = "horizontal";
                 objectFit = "cover"; // Fill screen
-            } else { // Mobile (Taller)
-                minWidth = Math.max(screenWidth, 900);
-                minHeight = Math.max(screenHeight, 1600);
+            } else { // Mobile (Taller, closer to 9:16)
+                minWidth = 1080;  // Ensure minimum 9:16 aspect ratio
+                minHeight = 1920;  // Enforce tall images
                 orientation = "vertical";
-                objectFit = "contain"; // Show full image without cutting
+                objectFit = "cover"; // Fill screen properly
             }
 
             // Apply object-fit dynamically
